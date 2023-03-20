@@ -17,7 +17,7 @@ server.post("/api", async (req, res) => {
    * a quantidade de vendedores seja 4 ou mais (representada pelo value "2")
    * o script será executado
    */
-  if (cargo == "gestor_vendas" && qnt_vendedores == "2") {
+  if (cargo == "gestor_vendas" && qnt_vendedores == "4 ou mais") {
 
     const organizationRequestBody = {
       name: nome_empresa,
@@ -98,7 +98,7 @@ server.post("/api", async (req, res) => {
      * reposta caso a condição
      * inicial não seja atendida
      */
-  return res.status(400).json({ info: 'Não foi possível inserir no nosso sistema.' });
+  return res.status(400).json({ info: 'Não foi possível inserir no nosso sistema.', atencao: { cargo: 'Necessário que seja: gestor_vendas', qnt_funcionarios: 'Necessario que seja: 4 ou mais' }});
 });
 
 server.listen(3000, () => {
