@@ -7,6 +7,7 @@ server.use(bodyParser.json());
 const fetch = (...args) =>
   import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
+const serverPort = '/' || 3000
 
 server.post("/api", async (req, res) => {
 	console.log(req.body)
@@ -76,6 +77,6 @@ server.post("/api", async (req, res) => {
   return res.status(200).json(req.body);
 });
 
-server.listen("3000", () => {
+server.listen("/", () => {
   console.log("Servidor funcionando na porta 3000");
 });
