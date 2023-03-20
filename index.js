@@ -1,20 +1,24 @@
+require('dotenv').config()
 const express = require("express");
 const bodyParser = require("body-parser");
 const server = express();
 const { json } = require("body-parser");
+const fetch = (...args) =>
+import("node-fetch").then(({ default: fetch }) => fetch(...args));
+
 server.use(bodyParser.json());
 
-const fetch = (...args) =>
-  import("node-fetch").then(({ default: fetch }) => fetch(...args));
-
-const serverPort = '/' || 3000
 
 server.post("/api", async (req, res) => {
-	console.log(req.body)
-  const { nome, email, cargo, nome_empresa, qnt_vendedores } = req.body.data;
+  const { nome, email, cargo, nome_empresa, qnt_vendedores } = req.body;
 
-
+  /**
+   * Caso o cargo seja 'gestor de vendas' e 
+   * a quantidade de vendedores seja 4 ou mais (representada pelo value "2")
+   * o script será executado
+   */
   if (cargo == "gestor_vendas" && qnt_vendedores == "2") {
+
     const organizationRequestBody = {
       name: nome_empresa,
       customFields: {
@@ -26,14 +30,17 @@ server.post("/api", async (req, res) => {
       title: nome_empresa,
     };
 
-    // ORGANIZATION
+    /**
+     * Requisição para criação 
+     * da organização
+     */
     const organizationResponse = await fetch(
       "https://api.agendor.com.br/v3/organizations",
       {
         method: "POST", // or 'PUT'
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Token a86014c5-dd46-41c8-b673-356d6d67b119",
+          Authorization: process.env.AUTH_TOKEN,
         },
         body: JSON.stringify(organizationRequestBody),
       }
@@ -50,33 +57,50 @@ server.post("/api", async (req, res) => {
       role: cargo,
     };
 
-    // PEOPLE
+    /**
+     * Requisição para criação 
+     * da pessoa
+     */
     const peopleResponse = await fetch("https://api.agendor.com.br/v3/people", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Token a86014c5-dd46-41c8-b673-356d6d67b119",
+        Authorization: process.env.AUTH_TOKEN,
       },
       body: JSON.stringify(peopleRequestBody),
     });
 
-    // DEAL
+    /**
+     * Requisição para
+     * criação do negócio, utilizando
+     * como parâmetro ID da organização
+     */
     const dealResponse = await fetch(
       `https://api.agendor.com.br/v3/organizations/${organizationID}/deals`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Token a86014c5-dd46-41c8-b673-356d6d67b119",
+          Authorization: process.env.AUTH_TOKEN,
         },
         body: JSON.stringify(dealRequestBody),
       }
     );
-  }
 
-  return res.status(200).json(req.body);
+    /**
+     * resposta OK caso todos
+     * os steps ocorram tudo bem
+     */
+    return res.status(200).json(req.body);
+  } 
+
+  /**
+     * reposta caso a condição
+     * inicial não seja atendida
+     */
+  return res.status(400).json({ info: 'Não foi possível inserir no nosso sistema.' });
 });
 
-server.listen("/", () => {
+server.listen(3000, () => {
   console.log("Servidor funcionando na porta 3000");
 });
